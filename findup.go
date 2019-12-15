@@ -8,7 +8,7 @@ import (
 
 var fs = afero.NewOsFs()
 
-func findIn(name, dir string, fs afero.Fs) (bool, error) {
+func hasFile(name, dir string, fs afero.Fs) (bool, error) {
 	files, err := afero.ReadDir(fs, dir)
 
 	if err != nil {
@@ -24,40 +24,40 @@ func findIn(name, dir string, fs afero.Fs) (bool, error) {
 	return false, nil
 }
 
-func findupFrom(name, dir string, fs afero.Fs) (bool, error) {
+func findupFrom(name, dir string, fs afero.Fs) (string, error) {
 	for {
-		found, err := findIn(name, dir, fs)
+		found, err := hasFile(name, dir, fs)
 
 		if err != nil {
-			return false, err
+			return "", err
 		}
 
 		if found {
-			return true, nil
+			return filepath.Join(dir, name), nil
 		}
 
 		parent := filepath.Dir(dir)
 
 		if parent == dir {
-			return false, nil
+			return "", nil
 		}
 
 		dir = parent
 	}
 }
 
-func findup(name string, fs afero.Fs) (bool, error) {
+func findup(name string, fs afero.Fs) (string, error) {
 	return findupFrom(name, ".", fs)
 }
 
 // Recursively find a file by walking up parents in the file tree
 // starting from a specific directory.
-func FindupFrom(name, dir string) (bool, error) {
+func FindupFrom(name, dir string) (string, error) {
 	return findupFrom(name, dir, fs)
 }
 
 // Recursively find a file by walking up parents in the file tree
 // starting from the current working directory.
-func Findup(name string) (bool, error) {
+func Findup(name string) (string, error) {
 	return findup(name, fs)
 }

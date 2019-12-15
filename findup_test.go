@@ -15,17 +15,19 @@ type given struct {
 
 type expect struct {
 	found bool
+	path  string
 	err   string
 }
 
-type assertion struct {
-	given  given
-	expect expect
+type finderAssertion struct {
+	given
+	expect
 }
 
-type assertions []assertion
+type finderAssertions []finderAssertion
 
 type finderFunc func(string, string, afero.Fs) (bool, error)
+type findupFunc func(string, string, afero.Fs) (string, error)
 
 var fakefs = afero.NewMemMapFs()
 
@@ -53,9 +55,16 @@ func init() {
 	afero.WriteFile(fakefs, "r.txt", []byte("some mock file"), 0644)
 }
 
-func testAssertions(t *testing.T, as assertions, fn finderFunc) {
-	for _, a := range as {
-		found, err := fn(a.given.file, a.given.base, fakefs)
+func TestFindIn(t *testing.T) {
+	assertions := finderAssertions{
+		{given{"ab", "/test/a"}, expect{found: true, err: ""}},
+		{given{"ac", "/test/a"}, expect{found: true, err: ""}},
+		{given{"ae", "/test/a"}, expect{found: false, err: ""}},
+		{given{"de", "/test/d"}, expect{found: false, err: "open " + filepath.Join("/", "test", "d") + ": file does not exist"}},
+	}
+
+	for _, a := range assertions {
+		found, err := hasFile(a.given.file, a.given.base, fakefs)
 
 		if a.expect.found {
 			assert.True(t, found)
@@ -71,25 +80,24 @@ func testAssertions(t *testing.T, as assertions, fn finderFunc) {
 	}
 }
 
-func TestFindIn(t *testing.T) {
-	assertions := assertions{
-		{given{"ab", "/test/a"}, expect{true, ""}},
-		{given{"ac", "/test/a"}, expect{true, ""}},
-		{given{"ae", "/test/a"}, expect{false, ""}},
-		{given{"de", "/test/d"}, expect{false, "open " + filepath.Join("/", "test", "d") + ": file does not exist"}},
-	}
-
-	testAssertions(t, assertions, findIn)
-}
-
 func TestFindUpFrom(t *testing.T) {
-	assertions := assertions{
-		{given{"ab", "/test/a"}, expect{true, ""}},
-		{given{"ab", "/test/a/ac"}, expect{true, ""}},
-		{given{"t.txt", "/test/a/ac"}, expect{true, ""}},
-		{given{"r.txt", "/test/a/ac"}, expect{true, ""}},
-		{given{"r.txt", "/test/d"}, expect{false, "open " + filepath.Join("/", "test", "d") + ": file does not exist"}},
+	assertions := finderAssertions{
+		{given{"ab", "/test/a"}, expect{path: filepath.Join("/", "test", "a", "ab"), err: ""}},
+		{given{"ab", "/test/a/ac"}, expect{path: filepath.Join("/", "test", "a", "ab"), err: ""}},
+		{given{"t.txt", "/test/a/ac"}, expect{path: filepath.Join("/", "test", "t.txt"), err: ""}},
+		{given{"r.txt", "/test/a/ac"}, expect{path: filepath.Join("/", "r.txt"), err: ""}},
+		{given{"r.txt", "/test/d"}, expect{path: "", err: "open " + filepath.Join("/", "test", "d") + ": file does not exist"}},
 	}
 
-	testAssertions(t, assertions, findupFrom)
+	for _, a := range assertions {
+		found, err := findupFrom(a.given.file, a.given.base, fakefs)
+
+		assert.Equal(t, found, a.expect.path)
+
+		if a.expect.err == "" {
+			assert.Nil(t, err)
+		} else {
+			assert.EqualError(t, err, a.expect.err)
+		}
+	}
 }
