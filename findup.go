@@ -1,6 +1,7 @@
 package gofindup
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/afero"
@@ -47,7 +48,13 @@ func findupFrom(name, dir string, fs afero.Fs) (string, error) {
 }
 
 func findup(name string, fs afero.Fs) (string, error) {
-	return findupFrom(name, ".", fs)
+	cwd, err := os.Getwd()
+
+	if err != nil {
+		return "", nil
+	}
+
+	return findupFrom(name, cwd, fs)
 }
 
 // Recursively find a file by walking up parents in the file tree
