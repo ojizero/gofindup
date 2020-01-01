@@ -51,7 +51,7 @@ func findup(name string, fs afero.Fs) (string, error) {
 	cwd, err := os.Getwd()
 
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	return findupFrom(name, cwd, fs)
