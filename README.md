@@ -4,6 +4,8 @@
 
 ## Usage
 
+[![GoDoc](https://godoc.org/github.com/ojizero/gofindup?status.svg)](https://godoc.org/github.com/ojizero/gofindup)
+
 Install latest version
 
 ```sh
@@ -23,5 +25,5 @@ This package only exposes 2 functions, `Findup` and `FindupFrom`,
 gofindup.Findup("some-file-or-directory")
 
 // looks the file recursively in parents starting from "./some-starting-directory"
-gofindup.Findup("some-file-or-directory", "some-starting-directory")
+gofindup.FindupFrom("some-file-or-directory", "some-starting-directory")
 ```
