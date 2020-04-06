@@ -18,14 +18,10 @@ jobs:
         id: go
 
       - name: Check out code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Get dependencies
         run: go mod download
 
       - name: Tests
         run: go test
-
-      # - name: Version bump
-      #   if: github.ref == "master"
-      #   run: "automatically bump the version here"
