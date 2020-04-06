@@ -21,11 +21,6 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
 
-      - name: Get dependencies
-        run: |
-          go mod download
-          go get github.com/mitchellh/gox
-
       - name: Run release
         uses: goreleaser/goreleaser-action@v1
         with:
