@@ -1,10 +1,11 @@
 # Go Find Up
 
+[![GoDoc](https://godoc.org/github.com/ojizero/gofindup?status.svg)](https://godoc.org/github.com/ojizero/gofindup)
+![Run tests](https://github.com/ojizero/gofindup/workflows/Run%20tests/badge.svg?branch=master)
+
 > Find a file or directory by walking up parent directories.
 
 ## Usage
-
-[![GoDoc](https://godoc.org/github.com/ojizero/gofindup?status.svg)](https://godoc.org/github.com/ojizero/gofindup)
 
 Install latest version
 
