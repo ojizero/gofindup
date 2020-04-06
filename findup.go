@@ -1,16 +1,17 @@
 package gofindup
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/spf13/afero"
 )
 
-var fs = afero.NewOsFs()
+type readDir func(string) ([]os.FileInfo, error)
 
-func hasFile(name, dir string, fs afero.Fs) (bool, error) {
-	files, err := afero.ReadDir(fs, dir)
+var defaultReadDir readDir = ioutil.ReadDir
+
+func hasFile(name, dir string, readdir readDir) (bool, error) {
+	files, err := readdir(dir)
 
 	if err != nil {
 		return false, err
@@ -25,9 +26,9 @@ func hasFile(name, dir string, fs afero.Fs) (bool, error) {
 	return false, nil
 }
 
-func findupFrom(name, dir string, fs afero.Fs) (string, error) {
+func findupFrom(name, dir string, readdir readDir) (string, error) {
 	for {
-		found, err := hasFile(name, dir, fs)
+		found, err := hasFile(name, dir, readdir)
 
 		if err != nil {
 			return "", err
@@ -47,24 +48,24 @@ func findupFrom(name, dir string, fs afero.Fs) (string, error) {
 	}
 }
 
-func findup(name string, fs afero.Fs) (string, error) {
+func findup(name string, readdir readDir) (string, error) {
 	cwd, err := os.Getwd()
 
 	if err != nil {
 		return "", err
 	}
 
-	return findupFrom(name, cwd, fs)
+	return findupFrom(name, cwd, readdir)
 }
 
 // Recursively find a file by walking up parents in the file tree
 // starting from a specific directory.
 func FindupFrom(name, dir string) (string, error) {
-	return findupFrom(name, dir, fs)
+	return findupFrom(name, dir, defaultReadDir)
 }
 
 // Recursively find a file by walking up parents in the file tree
 // starting from the current working directory.
 func Findup(name string) (string, error) {
-	return findup(name, fs)
+	return findup(name, defaultReadDir)
 }

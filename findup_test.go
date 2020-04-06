@@ -1,6 +1,7 @@
 package gofindup
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -30,6 +31,10 @@ type finderFunc func(string, string, afero.Fs) (bool, error)
 type findupFunc func(string, string, afero.Fs) (string, error)
 
 var fakefs = afero.NewMemMapFs()
+
+func fakeReadDir(name string) ([]os.FileInfo, error) {
+	return afero.ReadDir(fakefs, name)
+}
 
 func init() {
 	// Build fake file system
@@ -64,7 +69,7 @@ func TestFindIn(t *testing.T) {
 	}
 
 	for _, a := range assertions {
-		found, err := hasFile(a.given.file, a.given.base, fakefs)
+		found, err := hasFile(a.given.file, a.given.base, fakeReadDir)
 
 		if a.expect.found {
 			assert.True(t, found)
@@ -90,7 +95,7 @@ func TestFindUpFrom(t *testing.T) {
 	}
 
 	for _, a := range assertions {
-		found, err := findupFrom(a.given.file, a.given.base, fakefs)
+		found, err := findupFrom(a.given.file, a.given.base, fakeReadDir)
 
 		assert.Equal(t, found, a.expect.path)
 
