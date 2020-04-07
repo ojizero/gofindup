@@ -15,11 +15,8 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v2
-
-      # The unshallow step is required for GoReleaser's
-      # changelog generation to work correctly.
-      - name: Unshallow
-        run: git fetch --prune --unshallow
+        with:
+          fetch-depth: 0
 
       - name: Run release
         uses: goreleaser/goreleaser-action@v1
